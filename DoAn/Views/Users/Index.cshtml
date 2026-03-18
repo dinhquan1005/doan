@@ -1,0 +1,33 @@
+﻿@model IEnumerable<DoAn.Models.Trip>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success fw-bold"><i class="bi bi-radar"></i> Cuốc xe quanh đây</h2>
+        <span class="badge bg-primary">Tài xế: @Context.Session.GetString("UserName")</span>
+    </div>
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 15px;">
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted">Điểm đón:</small>
+                            <h6 class="fw-bold text-primary"><i class="bi bi-geo-alt-fill"></i> @item.PickupLocation</h6>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Điểm đến:</small>
+                            <h6 class="fw-bold text-dark"><i class="bi bi-flag-fill"></i> @item.DropoffLocation</h6>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 text-danger fw-bold mb-0">@item.Price.ToString("N0")đ</span>
+                            <form asp-action="Accept" asp-route-id="@item.TripID" method="post">
+                                <button type="submit" class="btn btn-success">Nhận cuốc này</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

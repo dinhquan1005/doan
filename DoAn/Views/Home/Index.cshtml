@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Trang chủ - Thuê Xe Hộ";
+    var userName = Context.Session.GetString("UserName");
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="container">
+    <div class="main-card text-center">
+        @if (string.IsNullOrEmpty(userName))
+        {
+            <h1 class="display-4 fw-bold text-primary">Dịch Vụ Thuê Tài Xế Lái Hộ</h1>
+            <p class="lead mt-3">An toàn của bạn là trách nhiệm của chúng tôi. Đừng lái xe khi đã uống rượu bia!</p>
+            <hr class="my-4">
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a asp-controller="Users" asp-action="Login" class="btn btn-primary btn-custom btn-lg px-4 gap-3">Đăng nhập</a>
+                <a asp-controller="Users" asp-action="Register" class="btn btn-outline-secondary btn-custom btn-lg px-4">Đăng ký ngay</a>
+            </div>
+        }
+        else
+        {
+            <h2 class="mb-4">Chào mừng trở lại, <span class="text-primary">@userName</span>!</h2>
+
+            @if (userRole == "Customer")
+            {
+                <div class="alert alert-info">Bạn đang đăng nhập với tư cách <b>Khách hàng</b>.</div>
+                <div class="mt-4">
+                    <p>Bạn cần một tài xế đưa bạn về nhà an toàn?</p>
+                    <a asp-controller="Trips" asp-action="Create" class="btn btn-danger btn-custom btn-lg">
+                        <i class="bi bi-geo-alt-fill"></i> ĐẶT TÀI XẾ NGAY
+                    </a>
+                </div>
+            }
+            else if (userRole == "Driver")
+            {
+                <div class="alert alert-success">Bạn đang đăng nhập với tư cách <b>Tài xế</b>.</div>
+                <div class="mt-4">
+                    <p>Kiểm tra các yêu cầu thuê xe mới nhất xung quanh bạn.</p>
+                    <a asp-controller="Trips" asp-action="Index" class="btn btn-success btn-custom btn-lg">
+                        <i class="bi bi-list-check"></i> XEM DANH SÁCH CUỐC XE
+                    </a>
+                </div>
+            }
+        }
+    </div>
+</div>

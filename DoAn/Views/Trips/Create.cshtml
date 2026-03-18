@@ -1,0 +1,41 @@
+﻿@model DoAn.Models.Trip
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <h2 class="text-center fw-bold text-primary mb-4">
+                        <i class="bi bi-car-front"></i> Đặt Tài Xế Lái Hộ
+                    </h2>
+                    <form asp-action="Create">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Điểm đón bạn</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-geo-alt-fill text-danger"></i></span>
+                                <input asp-for="PickupLocation" class="form-control border-light bg-light" placeholder="Nhập địa chỉ quán nhậu, nhà hàng..." required />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Điểm đến (Về nhà)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-house-door-fill text-success"></i></span>
+                                <input asp-for="DropoffLocation" class="form-control border-light bg-light" placeholder="Nhập địa chỉ nhà bạn..." required />
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Giá tiền mong muốn</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-currency-dollar text-warning"></i></span>
+                                <input asp-for="Price" class="form-control border-light bg-light" type="number" placeholder="Ví dụ: 100000" required />
+                                <span class="input-group-text bg-light border-0">VNĐ</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm" style="border-radius: 10px;">
+                            XÁC NHẬN ĐẶT XE
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

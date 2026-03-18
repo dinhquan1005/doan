@@ -1,0 +1,26 @@
+﻿@model IEnumerable<DoAn.Models.Trip>
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-success"><i class="bi bi-list-check"></i> Chuyến xe đang chờ</h2>
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary"><i class="bi bi-pin-map"></i> @item.PickupLocation</h5>
+                        <p class="card-text text-muted">Đến: @item.DropoffLocation</p>
+                        <p class="fw-bold text-danger">Giá: @item.Price.ToString("N0") đ</p>
+                        <form asp-action="Accept" asp-route-id="@item.TripID" method="post">
+                            <button type="submit" class="btn btn-success w-100">Nhận cuốc này</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (!Model.Any())
+        {
+            <div class="alert alert-light text-center w-100">Hiện không có cuốc xe nào đang chờ.</div>
+        }
+    </div>
+</div>
