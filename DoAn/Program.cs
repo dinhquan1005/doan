@@ -12,15 +12,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Đăng ký dịch vụ Session (BẮT BUỘC nằm trước Build)
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Phiên làm việc 30 phút
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddAuthentication("CookieAuth")
+    .AddCookie("CookieAuth", config =>
+    {
+        config.Cookie.Name = "DriverPro.Cookie";
+        config.LoginPath = "/Users/Login";
+        config.AccessDeniedPath = "/Home/Error";
+    });
 
-// Xây dựng ứng dụng
 var app = builder.Build();
+
 
 // --- PHẦN 2: CẤU HÌNH PIPELINE (MIDDLEWARE) ---
 
@@ -37,6 +43,7 @@ app.UseRouting();
 // Kích hoạt Session (Phải nằm sau UseRouting và trước MapControllerRoute)
 app.UseSession();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

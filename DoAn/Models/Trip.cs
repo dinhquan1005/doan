@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DoAn.Models
 {
@@ -6,17 +7,25 @@ namespace DoAn.Models
     {
         [Key]
         public int TripID { get; set; }
+
+        [Required]
         public string PickupLocation { get; set; }
+
+        [Required]
         public string DropoffLocation { get; set; }
+
         public decimal Price { get; set; }
-        public string Status { get; set; } // "Pending", "Accepted", "Completed"
 
-        // ID của khách hàng (Quân)
+        public TripStatus Status { get; set; } = TripStatus.Pending;
+
         public int CustomerID { get; set; }
+        [ForeignKey("CustomerID")]
+        public virtual User Customer { get; set; } // Điều hướng EF Core
 
-        // ID của tài xế (Khôi) - Để null nếu chưa có ai nhận
         public int? DriverID { get; set; }
+        [ForeignKey("DriverID")]
+        public virtual User Driver { get; set; } // Điều hướng EF Core
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

@@ -16,9 +16,8 @@ namespace DoAn.Models
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } // Lưu ý: Thực tế nên mã hóa Hash (BCrypt)
 
-        // Vai trò: "Customer" hoặc "Driver"
-        public string Role { get; set; }
+        public string Role { get; set; } = AppRoles.Customer; // Mặc định là Khách hàng
     }
 }

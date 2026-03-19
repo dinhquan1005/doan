@@ -5,7 +5,7 @@
         @foreach (var item in Model)
         {
             <div class="col-md-12 mb-3">
-                <div class="card shadow-sm border-0 border-start border-4 @(item.Status == "Pending" ? "border-warning" : "border-success")">
+                <div class="card shadow-sm border-0 border-start border-4 @(item.Status == DoAn.Models.TripStatus.Pending ? "border-warning" : "border-success")">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted">@item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</h6>
@@ -13,9 +13,9 @@
                             <h5><i class="bi bi-flag text-success"></i> @item.DropoffLocation</h5>
                         </div>
                         <div class="text-end">
-                            <span class="badge @(item.Status == "Pending" ? "bg-warning" : "bg-success") mb-2">@item.Status</span>
+                            <span class="badge @(item.Status == DoAn.Models.TripStatus.Pending ? "bg-warning" : "bg-success") mb-2">@item.Status</span>
                             <h4 class="text-primary fw-bold">@item.Price.ToString("N0")đ</h4>
-                            @if (item.Status == "Pending")
+                            @if (item.Status == DoAn.Models.TripStatus.Pending)
                             {
                                 <form asp-action="Cancel" asp-route-id="@item.TripID" method="post">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">Hủy chuyến</button>

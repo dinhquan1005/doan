@@ -1,137 +1,107 @@
 ﻿using DoAn.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
+[Authorize] // Yêu cầu phải đăng nhập mới vào được Controller này
 public class TripsController : Controller
 {
     private readonly ApplicationDbContext _context;
     public TripsController(ApplicationDbContext context) { _context = context; }
 
-    // Dành cho Tài xế: Chỉ xem các chuyến "Pending"
+    // Helper method lấy UserID hiện tại
+    private int GetCurrentUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+    [Authorize(Roles = AppRoles.Driver)]
     public IActionResult Index()
     {
-        if (HttpContext.Session.GetString("UserRole") != "Driver")
-            return RedirectToAction("Login", "Users");
-
-        var trips = _context.Trips.Where(t => t.Status == "Pending").OrderByDescending(t => t.CreatedAt).ToList();
+        var trips = _context.Trips
+            .Include(t => t.Customer) // Load sẵn tên khách hàng
+            .Where(t => t.Status == TripStatus.Pending)
+            .OrderByDescending(t => t.CreatedAt)
+            .ToList();
         return View(trips);
     }
 
-    // Hàm này để HIỂN THỊ cái trang web (Trình duyệt dùng GET)
-    [HttpGet]
-    public IActionResult Create()
-    {
-        // Kiểm tra session để đảm bảo chỉ Customer mới vào được
-        if (HttpContext.Session.GetString("UserRole") != "Customer")
-        {
-            return RedirectToAction("Login", "Users");
-        }
-        return View();
-    }
+    [Authorize(Roles = AppRoles.Customer)]
+    public IActionResult Create() => View();
 
-    // Hàm này để NHẬN DỮ LIỆU khi bạn nhấn nút Đặt xe (Form dùng POST)
     [HttpPost]
+    [Authorize(Roles = AppRoles.Customer)]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(Trip trip)
     {
-        var userId = HttpContext.Session.GetInt32("UserID");
-        if (userId == null) return RedirectToAction("Login", "Users");
-
-        trip.CustomerID = userId.Value;
-        trip.Status = "Pending";
+        trip.CustomerID = GetCurrentUserId();
+        trip.Status = TripStatus.Pending;
         trip.CreatedAt = DateTime.Now;
 
         _context.Trips.Add(trip);
         _context.SaveChanges();
-        return RedirectToAction("MyTrips");
+        return RedirectToAction(nameof(MyTrips));
     }
 
-    // Trang danh sách chuyến đi của riêng Khách hàng đó
+    [Authorize(Roles = AppRoles.Customer)]
     public IActionResult MyTrips()
     {
-        var userId = HttpContext.Session.GetInt32("UserID");
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         var myTrips = _context.Trips
-            .Where(t => t.CustomerID == userId)
+            .Include(t => t.Driver)
+            .Where(t => t.CustomerID == GetCurrentUserId())
             .OrderByDescending(t => t.CreatedAt)
             .ToList();
         return View(myTrips);
     }
-    [HttpPost]
-    public IActionResult Finish(int id)
-    {
-        var trip = _context.Trips.Find(id);
-        var driverId = HttpContext.Session.GetInt32("UserID");
 
-        // Chỉ tài xế của chuyến đó mới được bấm hoàn thành
-        if (trip != null && trip.DriverID == driverId)
-        {
-            trip.Status = "Completed";
-            _context.SaveChanges();
-        }
-        return RedirectToAction("DriverHistory");
-    }
-    [HttpPost]
-    public IActionResult Accept(int id)
-    {
-        // Lấy ID của tài xế đang đăng nhập từ Session
-        var driverId = HttpContext.Session.GetInt32("UserID");
-
-        if (driverId == null)
-        {
-            return RedirectToAction("Login", "Users");
-        }
-
-        var trip = _context.Trips.Find(id);
-        if (trip != null && trip.Status == "Pending")
-        {
-            trip.DriverID = driverId;   // Gán tài xế nhận chuyến
-            trip.Status = "Accepted";    // Đổi trạng thái
-            _context.SaveChanges();      // Lưu vào SQL Server
-        }
-
-        return RedirectToAction("Index"); // Quay lại danh sách cuốc xe
-    }
-
-    [HttpPost]
-    public IActionResult Cancel(int id)
-    {
-        var userId = HttpContext.Session.GetInt32("UserID");
-        var trip = _context.Trips.Find(id);
-
-        if (trip != null && trip.CustomerID == userId && trip.Status == "Pending")
-        {
-            trip.Status = "Cancelled";
-            _context.SaveChanges();
-        }
-        return RedirectToAction("MyTrips");
-    }
+    [Authorize(Roles = AppRoles.Driver)]
     public IActionResult DriverHistory()
     {
-        var driverId = HttpContext.Session.GetInt32("UserID");
-        if (driverId == null || HttpContext.Session.GetString("UserRole") != "Driver")
-            return RedirectToAction("Login", "Users");
-
+        var driverId = GetCurrentUserId();
         var history = _context.Trips
             .Where(t => t.DriverID == driverId)
             .OrderByDescending(t => t.CreatedAt)
             .ToList();
 
-        // Tính tổng thu nhập từ các chuyến 'Completed'
-        ViewBag.TotalEarnings = history.Where(t => t.Status == "Completed").Sum(t => t.Price);
-
+        ViewBag.TotalEarnings = history.Where(t => t.Status == TripStatus.Completed).Sum(t => t.Price);
         return View(history);
     }
-    [HttpPost]
-    public IActionResult Complete(int id)
-    {
-        var driverId = HttpContext.Session.GetInt32("UserID");
-        var trip = _context.Trips.Find(id);
 
-        if (trip != null && trip.DriverID == driverId)
+    [HttpPost]
+    [Authorize(Roles = AppRoles.Driver)]
+    public IActionResult Accept(int id)
+    {
+        var trip = _context.Trips.Find(id);
+        if (trip != null && trip.Status == TripStatus.Pending)
         {
-            trip.Status = "Completed";
+            trip.DriverID = GetCurrentUserId();
+            trip.Status = TripStatus.Accepted;
             _context.SaveChanges();
         }
-        return RedirectToAction("DriverHistory");
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = AppRoles.Driver)]
+    public IActionResult Complete(int id) // Đã gộp Finish và Complete lại thành 1
+    {
+        var trip = _context.Trips.Find(id);
+        if (trip != null && trip.DriverID == GetCurrentUserId() && trip.Status == TripStatus.Accepted)
+        {
+            trip.Status = TripStatus.Completed;
+            _context.SaveChanges();
+        }
+        return RedirectToAction(nameof(DriverHistory));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = AppRoles.Customer)]
+    public IActionResult Cancel(int id)
+    {
+        var trip = _context.Trips.Find(id);
+        if (trip != null && trip.CustomerID == GetCurrentUserId() && trip.Status == TripStatus.Pending)
+        {
+            trip.Status = TripStatus.Cancelled;
+            _context.SaveChanges();
+        }
+        return RedirectToAction(nameof(MyTrips));
     }
 }

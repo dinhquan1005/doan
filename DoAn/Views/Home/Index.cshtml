@@ -1,46 +1,111 @@
-﻿@using Microsoft.AspNetCore.Http
-@{
-    ViewData["Title"] = "Trang chủ - Thuê Xe Hộ";
-    var userName = Context.Session.GetString("UserName");
-    var userRole = Context.Session.GetString("UserRole");
+﻿@{
+    ViewData["Title"] = "Trang Chủ";
 }
 
-<div class="container">
-    <div class="main-card text-center">
-        @if (string.IsNullOrEmpty(userName))
-        {
-            <h1 class="display-4 fw-bold text-primary">Dịch Vụ Thuê Tài Xế Lái Hộ</h1>
-            <p class="lead mt-3">An toàn của bạn là trách nhiệm của chúng tôi. Đừng lái xe khi đã uống rượu bia!</p>
-            <hr class="my-4">
-            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-                <a asp-controller="Users" asp-action="Login" class="btn btn-primary btn-custom btn-lg px-4 gap-3">Đăng nhập</a>
-                <a asp-controller="Users" asp-action="Register" class="btn btn-outline-secondary btn-custom btn-lg px-4">Đăng ký ngay</a>
-            </div>
-        }
-        else
-        {
-            <h2 class="mb-4">Chào mừng trở lại, <span class="text-primary">@userName</span>!</h2>
+<section class="hero-section d-flex align-items-center justify-content-center text-center">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative animate__animated animate__fadeInUp">
+        <h1 class="display-1 fw-bold mb-3 text-white hero-title">
+            Bạn Đã Say? <br />
+            <span class="text-warning">Để Chúng Tôi Lái.</span>
+        </h1>
+        <p class="lead mb-5 text-secondary fs-4 mx-auto" style="max-width: 700px;">
+            Dịch vụ đưa đón người say chuyên nghiệp nhất. An toàn của bạn là sứ mệnh của đội ngũ tài xế Driver Pro.
+        </p>
 
-            @if (userRole == "Customer")
+        <div class="d-flex justify-content-center gap-3">
+            @if (Context.Session.GetString("UserName") == null)
             {
-                <div class="alert alert-info">Bạn đang đăng nhập với tư cách <b>Khách hàng</b>.</div>
-                <div class="mt-4">
-                    <p>Bạn cần một tài xế đưa bạn về nhà an toàn?</p>
-                    <a asp-controller="Trips" asp-action="Create" class="btn btn-danger btn-custom btn-lg">
-                        <i class="bi bi-geo-alt-fill"></i> ĐẶT TÀI XẾ NGAY
-                    </a>
-                </div>
+                <a asp-controller="Users" asp-action="Register" class="btn btn-gold btn-lg px-5 py-3 shadow-lg">
+                    ĐĂNG KÝ NGAY
+                </a>
+                <a asp-controller="Users" asp-action="Login" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill">
+                    ĐĂNG NHẬP
+                </a>
             }
-            else if (userRole == "Driver")
+            else
             {
-                <div class="alert alert-success">Bạn đang đăng nhập với tư cách <b>Tài xế</b>.</div>
-                <div class="mt-4">
-                    <p>Kiểm tra các yêu cầu thuê xe mới nhất xung quanh bạn.</p>
-                    <a asp-controller="Trips" asp-action="Index" class="btn btn-success btn-custom btn-lg">
-                        <i class="bi bi-list-check"></i> XEM DANH SÁCH CUỐC XE
-                    </a>
-                </div>
+                <a asp-controller="Trips" asp-action="Create" class="btn btn-gold btn-lg px-5 py-3 shadow-lg">
+                    ĐẶT TÀI XẾ NGAY
+                </a>
             }
-        }
+        </div>
     </div>
-</div>
+</section>
+
+<section class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5 animate__animated animate__fadeIn">
+            <h2 class="text-warning fw-bold">DỊCH VỤ ĐẲNG CẤP</h2>
+            <div class="divider mx-auto"></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="glass-card p-5 text-center h-100">
+                    <div class="icon-box mb-4"><i class="bi bi-shield-check fs-1 text-warning"></i></div>
+                    <h4 class="fw-bold">An Toàn Tuyệt Đối</h4>
+                    <p class="text-secondary">Tài xế được tuyển chọn kỹ lưỡng, có đầy đủ bằng cấp và đạo đức nghề nghiệp.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-5 text-center h-100 border-warning">
+                    <div class="icon-box mb-4"><i class="bi bi-clock-history fs-1 text-warning"></i></div>
+                    <h4 class="fw-bold">Phục Vụ 24/7</h4>
+                    <p class="text-secondary">Bất kể đêm khuya hay lễ tết, chúng tôi luôn có mặt sau 15 phút gọi điện.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-5 text-center h-100">
+                    <div class="icon-box mb-4"><i class="bi bi-currency-dollar fs-1 text-warning"></i></div>
+                    <h4 class="fw-bold">Giá Cả Minh Bạch</h4>
+                    <p class="text-secondary">Tính giá tự động theo quãng đường, không phát sinh chi phí ẩn.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* CSS bổ sung để làm trang chủ cực đẹp */
+    .hero-section {
+        height: 100vh;
+        background: url('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop') no-repeat center center;
+        background-size: cover;
+        position: relative;
+        margin-top: -85px; /* Đẩy lên dưới Navbar */
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(10,10,10,0.7), rgba(10,10,10,1));
+    }
+
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .divider {
+        width: 60px;
+        height: 4px;
+        background: var(--gold);
+        border-radius: 2px;
+        margin-top: 10px;
+    }
+
+    .icon-box {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+</style>

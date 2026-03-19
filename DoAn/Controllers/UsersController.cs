@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DoAn.Models;
-using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace DoAn.Controllers
 {
@@ -8,53 +9,61 @@ namespace DoAn.Controllers
     {
         private readonly ApplicationDbContext _db;
 
-        public UsersController(ApplicationDbContext db)
-        {
-            _db = db;
-        }
+        public UsersController(ApplicationDbContext db) { _db = db; }
 
-        // 1. Giao diện Đăng ký
         public IActionResult Register() => View();
 
         [HttpPost]
-        public IActionResult Register(User user)
+        public async Task<IActionResult> Register(User user)
         {
             if (ModelState.IsValid)
             {
+                // Kiểm tra trùng số điện thoại
+                if (_db.Users.Any(u => u.PhoneNumber == user.PhoneNumber))
+                {
+                    ModelState.AddModelError("PhoneNumber", "Số điện thoại đã được đăng ký.");
+                    return View(user);
+                }
+
                 _db.Users.Add(user);
-                _db.SaveChanges(); // Lệnh này đẩy dữ liệu xuống SQL Server
+                await _db.SaveChangesAsync();
                 return RedirectToAction("Login");
             }
             return View(user);
         }
 
-        // 2. Giao diện Đăng nhập
         public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(string phone, string password)
+        public async Task<IActionResult> Login(string phone, string password)
         {
             var user = _db.Users.FirstOrDefault(u => u.PhoneNumber == phone && u.Password == password);
             if (user != null)
             {
-                // LƯU ĐỦ 3 THÔNG TIN QUAN TRỌNG
-                HttpContext.Session.SetInt32("UserID", user.UserID);
-                HttpContext.Session.SetString("UserName", user.FullName);
-                HttpContext.Session.SetString("UserRole", user.Role);
+                // Tạo Claims chuẩn ASP.NET Core
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
+                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim(ClaimTypes.Role, user.Role)
+                };
 
-                // Chuyển hướng thông minh dựa trên vai trò
-                if (user.Role == "Driver") return RedirectToAction("Index", "Trips");
+                var identity = new ClaimsIdentity(claims, "CookieAuth");
+                var principal = new ClaimsPrincipal(identity);
+
+                await HttpContext.SignInAsync("CookieAuth", principal);
+
+                if (user.Role == AppRoles.Driver) return RedirectToAction("Index", "Trips");
                 return RedirectToAction("Index", "Home");
             }
+
             ViewBag.Error = "Sai số điện thoại hoặc mật khẩu!";
             return View();
         }
-        public IActionResult Logout()
-        {
-            // Xóa toàn bộ thông tin đã lưu trong Session (UserName, UserID, UserRole)
-            HttpContext.Session.Clear();
 
-            // Sau khi đăng xuất, chuyển hướng người dùng về trang Login
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync("CookieAuth");
             return RedirectToAction("Login", "Users");
         }
     }

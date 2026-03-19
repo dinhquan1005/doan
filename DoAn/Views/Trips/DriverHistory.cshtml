@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<DoAn.Models.Trip>
 @{
-    var total = Model.Where(t => t.Status == "Completed").Sum(t => t.Price);
+    var total = Model.Where(t => t.Status == DoAn.Models.TripStatus.Completed).Sum(t => t.Price);
 }
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -28,7 +28,7 @@
                         <td class="fw-bold">@item.Price.ToString("N0")đ</td>
                         <td><span class="badge bg-info">@item.Status</span></td>
                         <td>
-                            @if (item.Status == "Accepted")
+                            @if (item.Status == DoAn.Models.TripStatus.Cancelled)
                             {
                                 <form asp-action="Complete" asp-route-id="@item.TripID" method="post">
                                     <button type="submit" class="btn btn-success btn-sm">Hoàn thành</button>
